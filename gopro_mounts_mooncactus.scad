@@ -6,7 +6,7 @@ gopro_primary_kind="triple"; // [example1,example2,triple,double]
 // The other head kind (only for the triple or double primary kind)
 gopro_secondary_kind="clamp"; // [double,triple,rod,clamp,tripod_small,tripod_large,none]
 // If you rotate the seconday head you will probably need to enable support to print it
-gopro_secondary_rotation=0; // [0:90]
+gopro_secondary_rotation=0; // [0:180]
 
 // Optional, possibly bent axis-to-axis extension rod (length cannot be less than 21mm).
 gopro_ext_len=50; //50;
@@ -14,8 +14,8 @@ gopro_ext_len=50; //50;
 gopro_ext_th=2;
 // Angle at the base of the extension
 gopro_ext_bend_angle=50; // [0:90]
-// Rotation at the base of the extension
-gopro_ext_rotation=0; // [0:90]
+// Twist at the base of the extension
+gopro_ext_twist=0; // [0:180]
 
 /* [Rod and captive nut] */
 
@@ -243,11 +243,11 @@ else // useful blocks
 	rotate([0,90,0])
 	{
 		if(gopro_primary_kind=="triple")
-			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_rotation%90!=0));
+			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_twist%90!=0));
 		else
-			gopro_connector("double", rounded_baseplate=(gopro_ext_rotation%90!=0));
+			gopro_connector("double", rounded_baseplate=(gopro_ext_twist%90!=0));
 
-			gopro_extended_elbow(rotation=gopro_ext_rotation, bend=gopro_ext_bend_angle, th=gopro_ext_th)
+			gopro_extended_elbow(rotation=gopro_ext_twist, bend=gopro_ext_bend_angle, th=gopro_ext_th)
 				gopro_extended(len=gopro_ext_len_real, th=gopro_ext_th)
 					rotate([0,-90,0]) 
 
