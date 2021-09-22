@@ -2,9 +2,9 @@
 /* [Main] */
 
 // First head kind ("example" show them all but is not printable)
-gopro_primary="triple"; // [example1,example2,triple,double]
+gopro_primary_kind="triple"; // [example1,example2,triple,double]
 // The other head kind (only for the triple or double primary kind)
-gopro_secondary_what="clamp"; // [double,triple,rod,clamp,tripod_small,tripod_large,none]
+gopro_secondary_kind="clamp"; // [double,triple,rod,clamp,tripod_small,tripod_large,none]
 // If you rotate the seconday head you will probably need to enable support to print it
 gopro_secondary_rotation=0; // [0:90]
 
@@ -181,9 +181,9 @@ for kind in double triple; do
 	for angle in 30 80; do
 		through=true
 		[[ $angle == 0 ]] && through=false
-		openscad -D print_it=true -D gopro_primary="\"$kind\"" -D gopro_captive_rod_angle=$angle -o gmb_${kind}_${angle}.stl gopro_mount_bit.scad
+		openscad -D print_it=true -D gopro_primary_kind="\"$kind\"" -D gopro_captive_rod_angle=$angle -o gmb_${kind}_${angle}.stl gopro_mount_bit.scad
 	done
-	openscad -D print_it=true -D gopro_primary="\"$kind\"" -D gopro_rod_nut_th=0 -o gmb_${kind}_simple.stl gopro_mount_bit.scad
+	openscad -D print_it=true -D gopro_primary_kind="\"$kind\"" -D gopro_rod_nut_th=0 -o gmb_${kind}_simple.stl gopro_mount_bit.scad
 done
 */
 
@@ -202,7 +202,7 @@ module gopro_reverse()
 // ================ Full (colored) example (for openscad & command line)
 //
 gopro_ext_len_real= (gopro_ext_len > 2*gopro_connector_y ? gopro_ext_len : 0);
-if(gopro_primary=="example1")
+if(gopro_primary_kind=="example1")
 {
 	gopro_connector("triple", withnut=true);
 
@@ -220,7 +220,7 @@ if(gopro_primary=="example1")
 		gopro_rod_connect(nut_th=gopro_rod_nut_th, nut_od=gopro_rod_nut_od, rod_id=gopro_captive_rod_id, angle=gopro_captive_rod_angle);
 
 }
-else if(gopro_primary=="example2")
+else if(gopro_primary_kind=="example2")
 {
 	color([0.6,0.6,0.6])
 	{
@@ -242,7 +242,7 @@ else // useful blocks
 	//
 	rotate([0,90,0])
 	{
-		if(gopro_primary=="triple")
+		if(gopro_primary_kind=="triple")
 			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_rotation%90!=0));
 		else
 			gopro_connector("double", rounded_baseplate=(gopro_ext_rotation%90!=0));
@@ -254,31 +254,31 @@ else // useful blocks
 		translate([0,-gopro_connector_y*2,0])
 		{
 			rotate([0,gopro_secondary_rotation,0])
-			if(gopro_secondary_what=="double" || gopro_secondary_what=="triple")
+			if(gopro_secondary_kind=="double" || gopro_secondary_kind=="triple")
 			{
 				translate([0,gopro_connector_y*2,0])
 					scale([1,-1,1])
-				if(gopro_secondary_what=="triple")
+				if(gopro_secondary_kind=="triple")
 					gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_secondary_rotation%90)!=0);
-				else if(gopro_secondary_what=="double")
+				else if(gopro_secondary_kind=="double")
 					gopro_connector("double", rounded_baseplate=(gopro_secondary_rotation%90)!=0);
 			}
-			else if(gopro_secondary_what=="rod" && gopro_captive_rod_id>0) // Optional captive nut
+			else if(gopro_secondary_kind=="rod" && gopro_captive_rod_id>0) // Optional captive nut
 			{
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				gopro_rod_connect(nut_th=gopro_rod_nut_th, nut_od=gopro_rod_nut_od, rod_id=gopro_captive_rod_id, angle=gopro_captive_rod_angle);
 			}
-			else if(gopro_secondary_what=="tripod_small") // Tripod mount (small, usual diameter)
+			else if(gopro_secondary_kind=="tripod_small") // Tripod mount (small, usual diameter)
 			{
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				gopro_tripod_connect(screw_d=tripod_small_d);  // 1/4"
 			}
-			else if(gopro_secondary_what=="tripod_large") // Tripod mount (large diameter)
+			else if(gopro_secondary_kind=="tripod_large") // Tripod mount (large diameter)
 			{
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				gopro_tripod_connect(screw_d=tripod_large_d);  // 3/8"
 			}
-			else if(gopro_secondary_what=="clamp" && gopro_bar_rod_d>0) // Optional bar mount (can't be both!)
+			else if(gopro_secondary_kind=="clamp" && gopro_bar_rod_d>0) // Optional bar mount (can't be both!)
 			{
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				rotate([0,90,0])
