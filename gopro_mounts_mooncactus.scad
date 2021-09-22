@@ -2,16 +2,20 @@
 /* [Main] */
 
 // First head kind ("example" show them all but is not printable)
-gopro_primary="example"; // [example,triple,double]
+gopro_primary="double"; // [example1,example2,triple,double]
 // The other head kind (only for the triple or double primary kind)
-gopro_secondary_what="triple"; // [double,triple,rod,clamp,none]
+gopro_secondary_what="clamp"; // [double,triple,rod,clamp,none]
 // If ever you rotate the seconday head you will probably need to enable support to print it
-gopro_secondary_rotated=0; // [0:false,1:true]
+gopro_secondary_rotation=20; // [0:90]
 
-// Optional axis-to-axis extension rod (hence, it cannot be less than 20.7)
-gopro_ext_len=50;
-// The wall thickness of the extension rod (2 to 6mm are good values)
-gopro_ext_th=3;
+// Optional, possibly bent axis-to-axis extension rod (length cannot be less than 21mm).
+gopro_ext_len=50; //50;
+// Thickness of the extension rod walls (2 to 6mm are good values)
+gopro_ext_th=2;
+// Starting angle of the extension in the horizontal plane.
+gopro_ext_angle=60;
+// Starting angle of the extension in the vertical plane.
+gopro_ext_rise=45;
 
 /* [Rod and captive nut] */
 
@@ -29,19 +33,19 @@ gopro_captive_protruding_h= 0.5;
 /* [Clamp/bar mount] */
 
 // This tab is useful only if you have selected "clamp" as the secondary head.  The optional (handle)bar diameter
-gopro_bar_rod_d= 31;
+gopro_bar_rod_d= 35;
 // How thick is the ring around the bar
-gopro_bar_th= 3.2;
+gopro_bar_th= 4;
 // How big is the gap between the jaws
-gopro_bar_gap= 2.4;
+gopro_bar_gap= 2;
 // The jaw screw diameter
 gopro_bar_screw_d= 3;
 // The diameter of the head of the screw
-gopro_bar_screw_head_d= 6.2;
+gopro_bar_screw_head_d= 6.4;
 // The diameter of the nut of the screw from corner to corner (can be zero)
-gopro_bar_screw_nut_d= 6.01;
+gopro_bar_screw_nut_d= 6.25;
 // How thick are the shoulders on which to bolt (each side)
-gopro_bar_screw_shoulder_th=4.5;
+gopro_bar_screw_shoulder_th=5;
 // Whether to reverse the bolt orientation (from which side you will screw the bolt, defaut is from the joint)
 gopro_bar_screw_reversed=false; // [true,false]
 
@@ -54,22 +58,23 @@ gopro_nut_d= 9.2;
 // How deep is this nut embossing (keep it small to avoid over-overhangs)
 gopro_nut_h= 2;
 // Hole diameter for the two-arm mount part
-gopro_holed_two= 5;
+gopro_holed_two= 5.2;
 // Hole diameter for the three-arm mount part
 gopro_holed_three= 5.5;
 // Thickness of the internal arm in the 3-arm mount part
-gopro_connector_th3_middle= 3.1;
+gopro_connector_th3_middle= 3.2;
 // Thickness of the side arms in the 3-arm mount part
-gopro_connector_th3_side= 2.7;
+gopro_connector_th3_side= 2.75;
 // Thickness of the arms in the 2-arm mount part
-gopro_connector_th2= 3.04;
+gopro_connector_th2= 2.85;
 // The gap in the 3-arm mount part for the two-arm
-gopro_connector_gap= 3.1;
+gopro_connector_gap= 2.95;
 // How round are the 2 and 3-arm parts
 gopro_connector_roundness= 1;
 // How thick are the mount walls
 gopro_wall_th= 3;
 
+// These two settings only helps against geometrical issues (non-manifold), do not change !
 gopro_connector_wall_tol=0.5+0;
 gopro_tol=0.04+0;
 
@@ -80,7 +85,7 @@ gopro_connector_y= gopro_connector_z/2+gopro_wall_th;
 
 ///////////////////////////////////////////////////////////////////////
 //
-// GoPro Hero mount and joint (gopro_mounts_mooncactus.scad) - Rev 1.03
+// GoPro Hero mount and joint (gopro_mounts_mooncactus.scad) - Rev 1.1
 //
 ///////////////////////////////////////////////////////////////////////
 //
@@ -96,9 +101,11 @@ gopro_connector_y= gopro_connector_z/2+gopro_wall_th;
 // 0.8 mm bottom/top
 // 100% fill (probably safer, though 30% is quite OK)
 //
-// Rev 1.01: fixed printing angle vs captive nut slot, added a slight freeplay
+// Rev 1.2: added vvertical angle option for extension, free head rotation and rounded baseplate when needed
+// Rev 1.1: added horizontal angle option for extension
+// Rev 1.03: examples and first release (20130317-1234)
 // Rev 1.02: added handle/bar mount and rounded the angles of the rod mount
-// Rec 1.03: examples and first release (20130317-1234)
+// Rev 1.01: fixed printing angle vs captive nut slot, added a slight freeplay
 
 /* ****************************************************************
 
@@ -172,20 +179,31 @@ for kind in double triple; do
 done
 */
 
+module gopro_more()
+{
+	for(i=[0:$children-1])
+		translate([0,-2*gopro_connector_y,0]) children(i);
+}
+module gopro_reverse()
+{
+	for(i=[0:$children-1])
+		scale([1,-1,1]) children(i);
+}
 
 //
 // ================ Full (colored) example (for openscad & command line)
 //
 gopro_ext_len_real= (gopro_ext_len > 2*gopro_connector_y ? gopro_ext_len : 0);
-if(gopro_primary=="example")
+if(gopro_primary=="example1")
 {
 	gopro_connector("triple", withnut=true);
-	
+
 	color([1,0.2,0.2])
 		gopro_bar_clamp(
 			rod_d= gopro_bar_rod_d, th=gopro_bar_th, gap=gopro_bar_gap,
 			screw_d= gopro_bar_screw_d, screw_head_d= gopro_bar_screw_head_d, screw_nut_d= gopro_bar_screw_nut_d, screw_shoulder_th= gopro_bar_screw_shoulder_th,
 			screw_reversed= gopro_bar_screw_reversed	);
+
 			
 	rotate([0,180,130]) color([0.2,0.2,1])
 		gopro_connector("double");
@@ -193,16 +211,20 @@ if(gopro_primary=="example")
 	rotate([0,180,130]) color([0,0.8,0])
 		gopro_rod_connect(nut_th=gopro_rod_nut_th, nut_od=gopro_rod_nut_od, rod_id=gopro_captive_rod_id, angle=gopro_captive_rod_angle);
 
-	translate([-35,-10,0]) color([0.6,0.6,0.6])
-	rotate([0,0,10])
+}
+else if(gopro_primary=="example2")
+{
+	color([0.6,0.6,0.6])
 	{
-		gopro_connector("double");
-		gopro_extended(len=gopro_ext_len, th=gopro_ext_th)
-		{
-			scale([1,-1,1])	gopro_connector("triple");
-			// or (eg.)
-//			translate([0,-2*gopro_connector_y,0]) gopro_bar_clamp(rod_d= 20, th= 5, gap= 5, screw_d= 3, screw_head_d= 6.2, screw_nut_d= 6.01, screw_shoulder_th=4.5, screw_reversed=true);
-		}
+		rotate([0,90,0]) gopro_connector("triple");
+		gopro_extended_elbow(angleh=60, th=gopro_ext_th)
+			gopro_extended(len=gopro_ext_len, th=gopro_ext_th)
+			{
+				//gopro_reverse() gopro_connector("triple");
+				// or (eg.)
+				gopro_more()
+					gopro_bar_clamp(rod_d= gopro_bar_rod_d, th= gopro_bar_th, gap= 5, screw_d= gopro_bar_screw_d, screw_head_d= gopro_bar_screw_head_d, screw_nut_d= gopro_bar_screw_nut_d, screw_shoulder_th=gopro_bar_screw_shoulder_th, screw_reversed=true, gap=2);	
+			}
 	}
 }
 else // useful blocks
@@ -213,29 +235,34 @@ else // useful blocks
 	rotate([0,90,0])
 	{
 		if(gopro_primary=="triple")
-			gopro_connector("triple", withnut=true);
+			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_rise%90!=0));
 		else
-			gopro_connector("double");
+			gopro_connector("double", rounded_baseplate=(gopro_ext_rise%90!=0));
 
-		gopro_extended(len=gopro_ext_len_real, th=gopro_ext_th) {}
-		translate([0,gopro_ext_len_real>0 ? gopro_ext_len_real-gopro_connector_y*2 : 0,0])
+			gopro_extended_elbow(anglev=gopro_ext_rise, angleh=gopro_ext_angle, th=gopro_ext_th)
+				gopro_extended(len=gopro_ext_len_real, th=gopro_ext_th)
+					rotate([0,-90,0]) 
+
+		translate([0,-gopro_connector_y*2,0])
 		{
-			rotate([0,gopro_secondary_rotated?-90:0,0])
+			rotate([0,gopro_secondary_rotation,0])
 			if(gopro_secondary_what=="double" || gopro_secondary_what=="triple")
 			{
 				translate([0,gopro_connector_y*2,0])
 					scale([1,-1,1])
 				if(gopro_secondary_what=="triple")
-					gopro_connector("triple", withnut=true);
+					gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_secondary_rotation%90)!=0);
 				else if(gopro_secondary_what=="double")
-					gopro_connector("double");
+					gopro_connector("double", rounded_baseplate=(gopro_secondary_rotation%90)!=0);
 			}
 			else if(gopro_secondary_what=="rod" && gopro_captive_rod_id>0) // Optional captive nut
 			{
+				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				gopro_rod_connect(nut_th=gopro_rod_nut_th, nut_od=gopro_rod_nut_od, rod_id=gopro_captive_rod_id, angle=gopro_captive_rod_angle);
 			}
 			else if(gopro_secondary_what=="clamp" && gopro_bar_rod_d>0) // Optional bar mount (can't be both!)
 			{
+				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				rotate([0,90,0])
 					gopro_bar_clamp(
 						rod_d= gopro_bar_rod_d,
@@ -266,7 +293,7 @@ module gopro_torus(r,rnd)
 				circle(r= rnd/2, $fs=0.2);
 }
 
-module gopro_rcyl(r,h, centered, rnd=1)
+module gopro_rcyl(r,h, center, rnd=1)
 {
 	translate([0,0,center ? -h/2 : 0])
 	hull() {
@@ -275,7 +302,19 @@ module gopro_rcyl(r,h, centered, rnd=1)
 	}
 }
 
-module gopro_connector(version="double", withnut=true, captive_nut_th=0, captive_nut_od=0, captive_rod_id=0, captive_nut_angle=0)
+module gopro_join_baseplate(rounded_baseplate=false)
+{
+	// add the common start/stop base plate
+	translate([0,gopro_connector_z/2+gopro_wall_th/2+gopro_connector_wall_tol,0])
+	{
+		if(!rounded_baseplate)
+			cube([gopro_connector_z,gopro_wall_th,gopro_connector_z], center=true);
+		else
+			rotate([90,0,0]) cylinder(d=sqrt(2)*gopro_connector_z,h=gopro_wall_th, center=true);
+	}
+}
+
+module gopro_connector(version="double", withnut=true, captive_nut_th=0, captive_nut_od=0, captive_rod_id=0, captive_nut_angle=0, rounded_baseplate=false)
 {
 	module gopro_profile(th)
 	{
@@ -304,9 +343,7 @@ module gopro_connector(version="double", withnut=true, captive_nut_th=0, captive
 					translate([0,0,gopro_connector_th3_middle/2 + gopro_connector_gap]) gopro_profile(gopro_connector_th3_side);
 			}
 
-			// add the common wall
-			translate([0,gopro_connector_z/2+gopro_wall_th/2+gopro_connector_wall_tol,0])
-				cube([gopro_connector_z,gopro_wall_th,gopro_connector_z], center=true);
+			gopro_join_baseplate(rounded_baseplate);
 
 			// add the optional nut emboss
 			if(version=="triple" && withnut)
@@ -478,43 +515,80 @@ module gopro_bar_clamp(
 	}
 }
 
+module gopro_extended_profile(th=3)
+{
+	for(r=[45:90:360]) rotate([0,0,r])
+	{
+		hull()
+		{
+			// corners
+			translate([sqrt(2)*(gopro_connector_x/2-th/2),0,0])
+			{
+				intersection()
+				{
+					rotate([0,0,45]) square([th,th],center=true);
+					circle(r=1.2*th/2,$fs=0.5);
+				}
+			}
+			circle(r=th/2);
+		}
+	}
+	// Internal roundness
+	difference()
+	{
+		square([th*2,th*2],center=true);
+		for(r=[0:90:360]) rotate([0,0,r])
+			translate([0,th*sqrt(2)]) circle(r=th/2,$fs=0.5);
+	}
+}
+
+module gopro_extended_elbow(anglev=0, angleh=0, th=3)
+{
+	module pie_slice(radius, angle, step)
+	{
+		for(theta = [0:step:angle-step])
+		{
+			linear_extrude(height = radius*2, center=true)
+				polygon( points = [[0,0],[radius * cos(theta+step) ,radius * sin(theta+step)],[radius*cos(theta),radius*sin(theta)]]);
+		}
+	}
+
+	module partial_rotate_extrude(angle, radius, convexity)
+	{
+		intersection ()
+		{
+			rotate_extrude(convexity=convexity) translate([radius,0,0]) for(i=[0:$children-1]) children(i);
+			pie_slice(radius*2, angle, angle/5);
+		}
+	}
+
+	rotate([0,anglev+90,0])
+		translate([-gopro_connector_x/2,gopro_connector_y,0])
+		{
+			if(angleh>0)
+				partial_rotate_extrude(angle=angleh, radius=gopro_connector_x/2, convexity = 10)
+					gopro_extended_profile(th);
+			translate([cos(angleh)*gopro_connector_x/2,sin(angleh)*gopro_connector_x/2,0])
+				rotate([0,0,angleh])
+					translate([0,-gopro_connector_y-gopro_tol,0])
+						for(i=[0:$children-1]) children(i);
+		}
+}
 
 module gopro_extended(len, th=3)
 {
-	linlen= len - 2*gopro_connector_y;
-	if(linlen>0)
+	linlen= max(len - 2*gopro_connector_y, 0);
+	translate([0,gopro_connector_y,0])
 	{
-		translate([0,gopro_connector_y,0])
+		if(linlen>0)
 		{
 			rotate([90,0,0])
 				translate([0,0,-linlen/2])
 					linear_extrude(height = linlen, center = true, convexity = 10)
-			{
-				for(r=[45:90:360]) rotate([0,0,r])
-					hull()
-					{
-						// corners
-						translate([sqrt(2)*(gopro_connector_x/2-th/2),0,0])
-						{
-							intersection()
-							{
-								rotate([0,0,45]) square([th,th],center=true);
-								circle(r=1.2*th/2,$fs=0.5);
-							}
-						}
-						circle(r=th/2);
-					}
-					// Internal roundness
-					difference()
-					{
-						square([th*2,th*2],center=true);
-						for(r=[0:90:360]) rotate([0,0,r])
-							translate([0,th*sqrt(2)]) circle(r=th/2,$fs=0.5);
-					}
-			}
-			translate([0,linlen+gopro_connector_y,0])
-				child(0);
+						gopro_extended_profile(th);
 		}
+		translate([0,linlen+gopro_connector_y,0])
+			for(i=[0:$children-1]) children(i);
 	}
 }
 
