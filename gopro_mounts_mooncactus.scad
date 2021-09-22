@@ -48,7 +48,7 @@ gopro_bar_screw_nut_d= 6.25;
 // How thick are the shoulders on which to bolt (each side)
 gopro_bar_screw_shoulder_th=5;
 // Whether to reverse the bolt orientation (from which side you will screw the bolt, defaut is from the joint)
-gopro_bar_screw_reversed=false; // [true,false]
+gopro_bar_screw_reversed=0; // [0:false, 1:true]
 
 /* [Baseplate] */
 
@@ -62,8 +62,8 @@ plate_screw_d=3.1;
 plate_screw_margin_outer=5;
 // Space betwen optional pairs of screws. Zero to have only one screw on each side.
 plate_screw_pair_spacing=0;
-// Make the screw pairs into slots (needs plate_screw_pair_spacing>0). Useful for straps, for example.
-plate_strap_slot=false; // [true,false]
+// Make the screw pairs into slots (needs positive plate_screw_pair_spacing). Useful for straps, for example.
+plate_strap_slot=0; // [0:false, 1:true]
 // Gap to leave for a strap be be sled between the plate and the rest of the shape (makes it harder to print).
 plate_strap_gap=0;
 
@@ -127,7 +127,8 @@ gopro_connector_y= gopro_connector_z/2+gopro_wall_th;
 // 100% fill (probably safer, though 30% is quite OK)
 // Better use PETG instead of PLA for heat resistance.
 //
-// Rev 1.2: added vvertical angle option for extension, free head rotation and rounded baseplate when needed
+// Rev 1.3: added tripod and base plate end shapes
+// Rev 1.2: added vertical angle option for extension, free head rotation and rounded baseplate when needed
 // Rev 1.1: added horizontal angle option for extension
 // Rev 1.03: examples and first release (20130317-1234)
 // Rev 1.02: added handle/bar mount and rounded the angles of the rod mount
