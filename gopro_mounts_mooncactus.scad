@@ -2,20 +2,20 @@
 /* [Main] */
 
 // First head kind ("example" show them all but is not printable)
-gopro_primary="double"; // [example1,example2,triple,double]
+gopro_primary="triple"; // [example1,example2,triple,double]
 // The other head kind (only for the triple or double primary kind)
 gopro_secondary_what="clamp"; // [double,triple,rod,clamp,none]
-// If ever you rotate the seconday head you will probably need to enable support to print it
-gopro_secondary_rotation=20; // [0:90]
+// If you rotate the seconday head you will probably need to enable support to print it
+gopro_secondary_rotation=0; // [0:90]
 
 // Optional, possibly bent axis-to-axis extension rod (length cannot be less than 21mm).
 gopro_ext_len=50; //50;
 // Thickness of the extension rod walls (2 to 6mm are good values)
 gopro_ext_th=2;
-// Starting angle of the extension in the horizontal plane.
-gopro_ext_angle=60;
-// Starting angle of the extension in the vertical plane.
-gopro_ext_rise=45;
+// Angle at the base of the extension
+gopro_ext_bend_angle=50; // [0:90]
+// Rotation at the base of the extension
+gopro_ext_rotation=0; // [0:90]
 
 /* [Rod and captive nut] */
 
@@ -90,16 +90,17 @@ gopro_connector_y= gopro_connector_z/2+gopro_wall_th;
 ///////////////////////////////////////////////////////////////////////
 //
 // CC-BY-NC 2013 jeremie.francois@gmail.com
-// http://www.thingiverse.com/thing:62800
-// http://betterprinter.blogspot.com
-//
+// https://www.linkedin.com/in/jeremiefrancois/
+// https://www.thingiverse.com/thing:62800
+// https://www.tridimake.com
 
-// It slices neatly on an ultimaker with the following parameters
+// It slices neatly with the following parameters
 //
 // 0.1 mm layers (for better look & more compact FDM) -- 0.15 is still OK (and faster)
 // 0.8 mm walls (loops->infill->perimeters)
 // 0.8 mm bottom/top
 // 100% fill (probably safer, though 30% is quite OK)
+// Better use PETG instead of PLA for heat resistance.
 //
 // Rev 1.2: added vvertical angle option for extension, free head rotation and rounded baseplate when needed
 // Rev 1.1: added horizontal angle option for extension
@@ -217,7 +218,7 @@ else if(gopro_primary=="example2")
 	color([0.6,0.6,0.6])
 	{
 		rotate([0,90,0]) gopro_connector("triple");
-		gopro_extended_elbow(angleh=60, th=gopro_ext_th)
+		gopro_extended_elbow(bend=60, th=gopro_ext_th)
 			gopro_extended(len=gopro_ext_len, th=gopro_ext_th)
 			{
 				//gopro_reverse() gopro_connector("triple");
@@ -235,11 +236,11 @@ else // useful blocks
 	rotate([0,90,0])
 	{
 		if(gopro_primary=="triple")
-			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_rise%90!=0));
+			gopro_connector("triple", withnut=true, rounded_baseplate=(gopro_ext_rotation%90!=0));
 		else
-			gopro_connector("double", rounded_baseplate=(gopro_ext_rise%90!=0));
+			gopro_connector("double", rounded_baseplate=(gopro_ext_rotation%90!=0));
 
-			gopro_extended_elbow(anglev=gopro_ext_rise, angleh=gopro_ext_angle, th=gopro_ext_th)
+			gopro_extended_elbow(rotation=gopro_ext_rotation, bend=gopro_ext_bend_angle, th=gopro_ext_th)
 				gopro_extended(len=gopro_ext_len_real, th=gopro_ext_th)
 					rotate([0,-90,0]) 
 
@@ -542,7 +543,7 @@ module gopro_extended_profile(th=3)
 	}
 }
 
-module gopro_extended_elbow(anglev=0, angleh=0, th=3)
+module gopro_extended_elbow(rotation=0, bend=0, th=3)
 {
 	module pie_slice(radius, angle, step)
 	{
@@ -562,14 +563,14 @@ module gopro_extended_elbow(anglev=0, angleh=0, th=3)
 		}
 	}
 
-	rotate([0,anglev+90,0])
+	rotate([0,rotation+90,0])
 		translate([-gopro_connector_x/2,gopro_connector_y,0])
 		{
-			if(angleh>0)
-				partial_rotate_extrude(angle=angleh, radius=gopro_connector_x/2, convexity = 10)
+			if(bend>0)
+				partial_rotate_extrude(angle=bend, radius=gopro_connector_x/2, convexity = 10)
 					gopro_extended_profile(th);
-			translate([cos(angleh)*gopro_connector_x/2,sin(angleh)*gopro_connector_x/2,0])
-				rotate([0,0,angleh])
+			translate([cos(bend)*gopro_connector_x/2,sin(bend)*gopro_connector_x/2,0])
+				rotate([0,0,bend])
 					translate([0,-gopro_connector_y-gopro_tol,0])
 						for(i=[0:$children-1]) children(i);
 		}
