@@ -3,8 +3,8 @@
 
 // First head kind ("example" show them all but is not printable)
 gopro_primary_kind="triple"; // [example1,example2,triple,double]
-// The other head kind (only for the triple or double primary kind)
-gopro_secondary_kind="clamp"; // [double,triple,rod,clamp,tripod_small,tripod_large,none]
+// Sedond head kind (only for the triple or double primary kind)
+gopro_secondary_kind="plate"; // [double,triple,rod,clamp,tripod_small,tripod_large,plate,none]
 // If you rotate the seconday head you will probably need to enable support to print it
 gopro_secondary_rotation=0; // [0:180]
 
@@ -17,11 +17,14 @@ gopro_ext_bend_angle=50; // [0:90]
 // Twist at the base of the extension
 gopro_ext_twist=0; // [0:180]
 
+// How thick are the mount walls
+gopro_wall_th= 3;
+
 /* [Rod and captive nut] */
 
-// This tab is useful only if you have selected "rod" as the secondary head. The optional rod diameter (also the captive nut internal diameter)
+// This tab is useful only if you have selected "rod" as the secondary head. Optional rod diameter (also the captive nut internal diameter)
 gopro_captive_rod_id= 3.8;
-// The angle the rod makes with the axis (0 is colinear, 90 is a right angle)
+// Angle the rod makes with the axis (0 is colinear, 90 is a right angle)
 gopro_captive_rod_angle= 45; // [0:90]
 // Optional captive nut thickness with freeplay (tightest would be 3.2)
 gopro_rod_nut_th= 3.6;
@@ -30,22 +33,39 @@ gopro_rod_nut_od= 8.05;
 
 /* [Clamp/bar mount] */
 
-// This tab is useful only if you have selected "clamp" as the secondary head.  The optional (handle)bar diameter
+// This tab is useful only if you have selected "clamp" as the secondary head.  Optional (handle)bar diameter
 gopro_bar_rod_d= 35;
 // How thick is the ring around the bar
 gopro_bar_th= 4;
 // How big is the gap between the jaws
 gopro_bar_gap= 2;
-// The jaw screw diameter
+// Bar screw diameter
 gopro_bar_screw_d= 3;
-// The diameter of the head of the screw
+// Diameter of the head of the screw
 gopro_bar_screw_head_d= 6.4;
-// The diameter of the nut of the screw from corner to corner (can be zero)
+// Diameter of the nut of the screw from corner to corner (can be zero)
 gopro_bar_screw_nut_d= 6.25;
 // How thick are the shoulders on which to bolt (each side)
 gopro_bar_screw_shoulder_th=5;
 // Whether to reverse the bolt orientation (from which side you will screw the bolt, defaut is from the joint)
 gopro_bar_screw_reversed=false; // [true,false]
+
+/* [Baseplate] */
+
+// This tab is useful only if you have selected "plate" as the secondary head. Increase gopro_wall_th for sturdier shape. Plate main length:
+plate_len=40;
+// Width of the plate, or zero for the exact arm section (it makes the shape easier to print, but a possibly unstable base)
+plate_width=0;
+// Diameter of the plate screws
+plate_screw_d=3.1;
+// Distance from screws to the exterior of the baseplate (ie. relative to plate_len)
+plate_screw_margin_outer=5;
+// Space betwen optional pairs of screws. Zero to have only one screw on each side.
+plate_screw_pair_spacing=0;
+// Make the screw pairs into slots (needs plate_screw_pair_spacing>0). Useful for straps, for example.
+plate_strap_slot=false; // [true,false]
+// Gap to leave for a strap be be sled between the plate and the rest of the shape (makes it harder to print).
+plate_strap_gap=0;
 
 /* [Hidden] */
 
@@ -69,8 +89,6 @@ gopro_connector_th2= 2.85;
 gopro_connector_gap= 2.95;
 // How round are the 2 and 3-arm parts
 gopro_connector_roundness= 1;
-// How thick are the mount walls
-gopro_wall_th= 3;
 
 // Hole diameter for small tripod mount screws (tight-fit)
 tripod_small_d=5.5;
@@ -278,6 +296,11 @@ else // useful blocks
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
 				gopro_tripod_connect(screw_d=tripod_large_d);  // 3/8"
 			}
+			else if(gopro_secondary_kind=="plate")
+			{
+				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
+				gopro_plate_connect();
+			}
 			else if(gopro_secondary_kind=="clamp" && gopro_bar_rod_d>0) // Optional bar mount (can't be both!)
 			{
 				gopro_join_baseplate(rounded_baseplate= (gopro_secondary_rotation%90!=0));
@@ -389,54 +412,51 @@ module gopro_rod_connect(nut_od=0, rod_id, nut_th=0, angle=0)
 	if( (nut_th>0 && nut_od>0) || rod_id>0 )
 	translate([0,gopro_connector_z,0])
 	{
+		// Main body mass
 		difference()
 		{
-			// Main body mass
-			difference()
+			hull()
 			{
-				hull()
-				{
-					translate([0,-gopro_connector_z/2+gopro_wall_th,0]) // attachment
-						cube([gopro_connector_z,gopro_tol,gopro_connector_z], center=true);
+				translate([0,-gopro_connector_z/2+gopro_wall_th,0]) // attachment
+					cube([gopro_connector_z,gopro_tol,gopro_connector_z], center=true);
 
-					// main cylinder
-					translate([gopro_connector_z/8,gopro_connector_z/4,0]) scale([0.75,0.5,1]) // optional
-					gopro_rcyl(r=gopro_connector_z/2, h=gopro_connector_z, center=true, rnd=3);
+				// main cylinder
+				translate([gopro_connector_z/8,gopro_connector_z/4,0]) scale([0.75,0.5,1]) // optional
+				gopro_rcyl(r=gopro_connector_z/2, h=gopro_connector_z, center=true, rnd=3);
 
-					// nozzle
-					rotate([0,0,angle])
-						translate([0,gopro_connector_z/2-gopro_tol,0])
-							rotate([-90,0,0])
-									translate([0,0,-1.5]) gopro_torus(r=gopro_connector_z/2, rnd=1.5);
-				}
-
-				// Captive nut slot
-				if(nut_th>0 && nut_od>0)
-				{
-					translate([0,0,0])
-						rotate([0,(angle<18)?180:0,angle]) // easier print only for small angles
-							hull()
-					{
-						rotate([-90,0,0]) cylinder(r=nut_od/2, h=nut_th+2*gopro_tol, $fn=6, center=true);
-						translate([gopro_connector_z,0,0])
-							rotate([-90,0,0]) cylinder(r=nut_od/2, h=nut_th+2*gopro_tol, $fn=6, center=true);
-					}
-				}
+				// nozzle
+				rotate([0,0,angle])
+					translate([0,gopro_connector_z/2-gopro_tol,0])
+						rotate([-90,0,0])
+								translate([0,0,-1.5]) gopro_torus(r=gopro_connector_z/2, rnd=1.5);
 			}
 
-			// Carve the rod void
-			if(rod_id>0)
+			// Captive nut slot
+			if(nut_th>0 && nut_od>0)
 			{
-				rotate([0,0,angle])
+				translate([0,0,0])
+					rotate([0,(angle<18)?180:0,angle]) // easier print only for small angles
+						hull()
 				{
-					if(angle>=80 || angle<=-80)
-						rotate([-90,30,0])
-							cylinder(r=rod_id/2, h=gopro_connector_z+2*gopro_tol, $fs=0.2, center=true);
-					else
-						translate([0,gopro_wall_th+gopro_tol*2-nut_th/2,0])
-							rotate([-90,30,0])
-								cylinder(r=rod_id/2, h=gopro_connector_z/2+gopro_tol, $fs=0.2);
+					rotate([-90,0,0]) cylinder(r=nut_od/2, h=nut_th+2*gopro_tol, $fn=6, center=true);
+					translate([gopro_connector_z,0,0])
+						rotate([-90,0,0]) cylinder(r=nut_od/2, h=nut_th+2*gopro_tol, $fn=6, center=true);
 				}
+			}
+		}
+
+		// Carve the rod void
+		if(rod_id>0)
+		{
+			rotate([0,0,angle])
+			{
+				if(angle>=80 || angle<=-80)
+					rotate([-90,30,0])
+						cylinder(r=rod_id/2, h=gopro_connector_z+2*gopro_tol, $fs=0.2, center=true);
+				else
+					translate([0,gopro_wall_th+gopro_tol*2-nut_th/2,0])
+						rotate([-90,30,0])
+							cylinder(r=rod_id/2, h=gopro_connector_z/2+gopro_tol, $fs=0.2);
 			}
 		}
 	}
@@ -450,31 +470,70 @@ module gopro_tripod_connect(screw_d)
 {
 	translate([0,gopro_connector_z/2+gopro_wall_th,0])
 	{
+		// Main body mass
 		difference()
 		{
-			// Main body mass
-			difference()
+			hull()
 			{
+				cube([gopro_connector_z,gopro_tol,gopro_connector_z], center=true);
+				// nozzle
+				translate([0,tripod_screw_depth,0])
+					rotate([-90,0,0])
+							translate([0,0,-1.5]) gopro_torus(r=tripod_base_d/2, rnd=1.5);
+			}
+		}
+		// Carve the screw
+		translate([0,-gopro_tol,0])
+			rotate([-90,30,0]) cylinder(r=screw_d/2, h=tripod_screw_depth + 2*gopro_tol, $fs=0.2);
+		translate([0,tripod_screw_depth-1.5,0]) // chamfer
+			rotate([-90,30,0]) cylinder(r1=screw_d/2, r2=screw_d/2+1, h=1.5 + 2*gopro_tol, $fs=0.2);
+		for(r=[0:60:359])
+			rotate([0,r,0])
+				translate([tripod_base_d/2+4-2,0,0])
+					scale([1,1,1.2])
+					rotate([-90,30,0]) cylinder(d=8,h=100, $fs=0.5);
+	}
+}
+
+//
+// ============================= BASIC PLATE MOUNT =============================
+//
+
+module gopro_plate_connect()
+{
+	module screws4()
+	{
+		for(dx=[-plate_screw_pair_spacing/2,plate_screw_pair_spacing/2])
+			translate([dx,gopro_wall_th+plate_strap_gap,plate_len/2 - plate_screw_margin_outer])
+				rotate([-90,0,0]) cylinder(d=plate_screw_d,h=gopro_wall_th+2*gopro_tol,center=true, $fs=0.5);
+	}
+	
+	pw= (plate_width>0 ? plate_width : gopro_connector_z);
+	translate([0,gopro_connector_z/2+gopro_wall_th/2,0])
+	{
+		difference()
+		{
+			union()
+			{
+				cube([gopro_connector_z,gopro_wall_th+gopro_tol,gopro_connector_z], center=true);
+				translate([0,gopro_wall_th+plate_strap_gap,0]) // baseplate
+					cube([pw, gopro_wall_th, plate_len], center=true);
+				for(z=[-0.5,0.5]) scale([z,1,1])
 				hull()
 				{
-					translate([0,0,0]) // attachment
-						cube([gopro_connector_z,gopro_tol,gopro_connector_z], center=true);
-					// nozzle
-					translate([0,tripod_screw_depth,0])
-						rotate([-90,0,0])
-								translate([0,0,-1.5]) gopro_torus(r=tripod_base_d/2, rnd=1.5);
+					translate([gopro_connector_z-gopro_wall_th,0,0])
+						cube([gopro_wall_th*2,gopro_wall_th,gopro_connector_z], center=true);
+					translate([pw-gopro_wall_th,,gopro_wall_th+plate_strap_gap,0])
+						cube([gopro_wall_th*2,gopro_wall_th,plate_len], center=true);
 				}
 			}
-			// Carve the screw
-			translate([0,-gopro_tol,0])
-				rotate([-90,30,0]) cylinder(r=screw_d/2, h=tripod_screw_depth + 2*gopro_tol, $fs=0.2);
-			translate([0,tripod_screw_depth-1.5,0]) // chamfer
-				rotate([-90,30,0]) cylinder(r1=screw_d/2, r2=screw_d/2+1, h=1.5 + 2*gopro_tol, $fs=0.2);
-			for(r=[0:60:359])
-				rotate([0,r,0])
-					translate([tripod_base_d/2+4-2,0,0])
-						scale([1,1,1.2])
-						rotate([-90,30,0]) cylinder(d=8,h=100, $fs=0.5);
+			for(dz=[-1,1]) scale([1,1,dz])
+			{
+				if(plate_strap_slot)
+					hull() screws4();
+				else
+					screws4();
+			}
 		}
 	}
 }
