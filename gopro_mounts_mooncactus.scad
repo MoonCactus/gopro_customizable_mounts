@@ -4,7 +4,7 @@
 // First head kind ("example" show them all but is not printable)
 gopro_primary_kind="triple"; // [example1,example2,triple,double]
 // Sedond head kind (only for the triple or double primary kind)
-gopro_secondary_kind="plate"; // [double,triple,rod,clamp,tripod_small,tripod_large,plate,none]
+gopro_secondary_kind="tripod_small"; // [double,triple,rod,clamp,tripod_small,tripod_large,plate,none]
 // If you rotate the seconday head you will probably need to enable support to print it
 gopro_secondary_rotation=0; // [0:180]
 
@@ -482,17 +482,17 @@ module gopro_tripod_connect(screw_d)
 					rotate([-90,0,0])
 							translate([0,0,-1.5]) gopro_torus(r=tripod_base_d/2, rnd=1.5);
 			}
+			// Carve the screw
+			translate([0,-gopro_tol,0])
+				rotate([-90,30,0]) cylinder(r=screw_d/2, h=tripod_screw_depth + 2*gopro_tol, $fs=0.2);
+			translate([0,tripod_screw_depth-1.5,0]) // chamfer
+				rotate([-90,30,0]) cylinder(r1=screw_d/2, r2=screw_d/2+1, h=1.5 + 2*gopro_tol, $fs=0.2);
+			for(r=[0:60:359])
+				rotate([0,r,0])
+					translate([tripod_base_d/2+4-2,0,0])
+						scale([1,1,1.2])
+						rotate([-90,30,0]) cylinder(d=8,h=100, $fs=0.5);
 		}
-		// Carve the screw
-		translate([0,-gopro_tol,0])
-			rotate([-90,30,0]) cylinder(r=screw_d/2, h=tripod_screw_depth + 2*gopro_tol, $fs=0.2);
-		translate([0,tripod_screw_depth-1.5,0]) // chamfer
-			rotate([-90,30,0]) cylinder(r1=screw_d/2, r2=screw_d/2+1, h=1.5 + 2*gopro_tol, $fs=0.2);
-		for(r=[0:60:359])
-			rotate([0,r,0])
-				translate([tripod_base_d/2+4-2,0,0])
-					scale([1,1,1.2])
-					rotate([-90,30,0]) cylinder(d=8,h=100, $fs=0.5);
 	}
 }
 
