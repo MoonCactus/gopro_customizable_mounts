@@ -444,20 +444,20 @@ module gopro_rod_connect(nut_od=0, rod_id, nut_th=0, angle=0)
 						rotate([-90,0,0]) cylinder(r=nut_od/2, h=nut_th+2*gopro_tol, $fn=6, center=true);
 				}
 			}
-		}
 
-		// Carve the rod void
-		if(rod_id>0)
-		{
-			rotate([0,0,angle])
+			// Carve the rod void
+			if(rod_id>0)
 			{
-				if(angle>=80 || angle<=-80)
-					rotate([-90,30,0])
-						cylinder(r=rod_id/2, h=gopro_connector_z+2*gopro_tol, $fs=0.2, center=true);
-				else
-					translate([0,gopro_wall_th+gopro_tol*2-nut_th/2,0])
+				rotate([0,0,angle])
+				{
+					if(angle>=80 || angle<=-80)
 						rotate([-90,30,0])
-							cylinder(r=rod_id/2, h=gopro_connector_z/2+gopro_tol, $fs=0.2);
+							cylinder(r=rod_id/2, h=gopro_connector_z+2*gopro_tol, $fs=0.2, center=true);
+					else
+						translate([0,gopro_wall_th+gopro_tol*2-nut_th/2,0])
+							rotate([-90,30,0])
+								cylinder(r=rod_id/2, h=gopro_connector_z/2+gopro_tol, $fs=0.2);
+				}
 			}
 		}
 	}
