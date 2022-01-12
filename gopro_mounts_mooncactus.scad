@@ -9,7 +9,7 @@ gopro_secondary_kind="tripod_small"; // [double,triple,rod,clamp,tripod_small,tr
 gopro_secondary_rotation=0; // [0:180]
 
 // Optional, possibly bent axis-to-axis extension rod (length cannot be less than 21mm).
-gopro_ext_len=50; //50;
+gopro_ext_len=50;
 // Thickness of the extension rod walls (2 to 6mm are good values)
 gopro_ext_th=2;
 // Angle at the base of the extension
